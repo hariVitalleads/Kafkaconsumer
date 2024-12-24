@@ -1,14 +1,17 @@
-package com.anidra.db.consumer.util;
+package com.anidra.message.util;
 
 import com.google.gson.JsonParser;
 import com.google.gson.JsonSyntaxException;
+import lombok.extern.slf4j.Slf4j;
 
 import java.security.SecureRandom;
 import java.time.LocalDateTime;
 import java.time.ZoneId;
 import java.time.ZoneOffset;
+import java.time.ZonedDateTime;
 import java.time.format.DateTimeFormatter;
 
+@Slf4j
 public class CommonUtils {
 
     private static final DateTimeFormatter DATE_TIME_FORMAT = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
@@ -25,6 +28,7 @@ public class CommonUtils {
         try {
             JsonParser.parseString(incomingJson);
         } catch (JsonSyntaxException e) {
+            log.error("CommonUtils::isValidJson exception with parsing the incoming json {}", e.getMessage());
             return false;
         }
         return true;
@@ -39,6 +43,29 @@ public class CommonUtils {
         return DATE_TIME_FORMAT.format(utcDateTime);
     }
 
+    public static String localDateTimeFromString() {
+        LocalDateTime localDateTime = LocalDateTime.now().minusDays(1); // or parse a string
+        ZonedDateTime zdt = localDateTime.atZone(ZoneId.systemDefault());
+        ZonedDateTime utcZdt = zdt.withZoneSameInstant(ZoneOffset.UTC);
+        LocalDateTime utcLocalDateTime = utcZdt.toLocalDateTime();
+        log.info("Local date time generated from string is {}", utcLocalDateTime.toString());
+
+        //LocalDateTime ldt = LocalDateTime.parse(dateString, DATE_TIME_FORMAT);
+        return timeInUtcString(utcLocalDateTime);
+    }
+
+    public static LocalDateTime localDateTimeForQuery() {
+        LocalDateTime localDateTime = LocalDateTime.now(); // or parse a string
+        ZonedDateTime zdt = localDateTime.atZone(ZoneId.systemDefault());
+        ZonedDateTime utcZdt = zdt.withZoneSameInstant(ZoneOffset.UTC);
+        LocalDateTime utcLocalDateTime = utcZdt.toLocalDateTime();
+        log.info("Local date time generated from string is {}", utcLocalDateTime.toString());
+
+        //LocalDateTime ldt = LocalDateTime.parse(dateString, DATE_TIME_FORMAT);
+        return utcLocalDateTime;
+    }
+
+    //TODO Revisit the generate user key generation
     public static String generateUserKey(int length) {
         String newKey = "UK".concat(generateKey(18));
         //   while(!isUserKeyUnique(newKey))

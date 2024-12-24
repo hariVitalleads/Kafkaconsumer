@@ -1,4 +1,4 @@
-package com.anidra.db.consumer.dto;
+package com.anidra.message.dto;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 import lombok.Getter;

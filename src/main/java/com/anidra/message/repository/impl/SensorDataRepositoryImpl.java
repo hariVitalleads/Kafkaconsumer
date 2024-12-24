@@ -1,17 +1,13 @@
-package com.anidra.db.consumer.repository.impl;
+package com.anidra.message.repository.impl;
 
-import com.anidra.db.consumer.dto.VitalsDto;
-import com.anidra.db.consumer.entity.SensorData;
-import com.anidra.db.consumer.repository.SensorDataRepository;
+import com.anidra.message.dto.VitalsDto;
+import com.anidra.message.repository.SensorDataRepository;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.stereotype.Repository;
 
-import java.util.Collections;
-import java.util.List;
-
-import static com.anidra.db.consumer.util.CommonUtils.generateUserKey;
+import static com.anidra.message.util.CommonUtils.generateUserKey;
 
 @Slf4j
 @Repository
@@ -52,19 +48,4 @@ public class SensorDataRepositoryImpl implements SensorDataRepository {
         };
     }
 
-    @Override
-    public List<VitalsDto> getAllSensorData() {
-//        List<SensorData> sensorData = new ArrayList<>();
-        try {
-            int count = jdbcTemplate.queryForObject("select count(*) from pm_sensor_data", Integer.class);
-            System.out.println("Row count is: " + count);
-            List<SensorData> sensorData = jdbcTemplate.queryForList("SELECT * from pm_sensor_data", SensorData.class);
-            for (SensorData data : sensorData) {
-                System.out.println(data);
-            }
-        } catch (Exception e) {
-            System.err.println("Exception occurred while fetching data " + e.getMessage());
-        }
-        return Collections.emptyList();
-    }
 }

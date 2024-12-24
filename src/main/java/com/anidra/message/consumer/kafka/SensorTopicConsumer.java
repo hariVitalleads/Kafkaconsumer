@@ -1,8 +1,8 @@
-package com.anidra.db.consumer;
+package com.anidra.message.consumer.kafka;
 
-import com.anidra.db.consumer.dto.VitalsDto;
-import com.anidra.db.consumer.repository.SensorDataRepository;
-import com.anidra.db.consumer.util.CommonUtils;
+import com.anidra.message.dto.VitalsDto;
+import com.anidra.message.repository.SensorDataRepository;
+import com.anidra.message.util.CommonUtils;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.extern.slf4j.Slf4j;
@@ -14,26 +14,29 @@ import java.time.LocalDateTime;
 
 @Slf4j
 @Component
-public class MysqlConsumer {
+public class SensorTopicConsumer {
+
+    private final String CONSUMER_TOPIC_NAME = "sensor";
+    private final String GROUP_ID = "MYSQL";
 
     @Autowired
     private SensorDataRepository sensorDataRepository;
 
-    @KafkaListener(topics = "preprocessed", groupId = "MYSQL")
+    @KafkaListener(topics = CONSUMER_TOPIC_NAME, groupId = GROUP_ID)
     public void consumeMessage(String message) {
-        System.out.println("Received message: " + message);
+        log.info("SensorTopicConsumer::consumeMessage received message on topic={} message={} ", CONSUMER_TOPIC_NAME, message);
 
         if (CommonUtils.isValidJson(message)) {
             ObjectMapper mapper = new ObjectMapper();
-            VitalsDto vitalsData = null;
             try {
-                vitalsData = mapper.readValue(message, VitalsDto.class);
+                VitalsDto vitalsData = mapper.readValue(message, VitalsDto.class);
                 String utcDateTime = CommonUtils.timeInUtcString(LocalDateTime.now());
                 vitalsData.setCreateTimeStamp(utcDateTime);
 
                 sensorDataRepository.saveSensorData(vitalsData);
+
             } catch (JsonProcessingException e) {
-                log.error("Unable to convert to Pojo {}", e.getMessage());
+                log.error("SensorTopicConsumer unable to convert to incoming data from Kafka {}", e.getMessage());
                 throw new RuntimeException(e);
             }
         }
